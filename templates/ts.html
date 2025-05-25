@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Manchester United Vintage Store</title>
+  <!-- Bootstrap CSS -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Bootstrap Icons -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.10.0/font/bootstrap-icons.min.css"
+    rel="stylesheet">
+  <style>
+    /* Custom CSS */
+    :root {
+      --primary-red: #da291c;
+      --dark-red: #a01c14;
+      --light-gray: #f8f9fa;
+    }
+
+    body {
+      background-color: var(--light-gray);
+      font-family: 'Roboto', Arial, sans-serif;
+    }
+
+    .navbar {
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .product-card {
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      height: 100%;
+    }
+
+    .product-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15) !important;
+    }
+
+    .product-image {
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .badge-tag {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      z-index: 10;
+    }
+
+    .btn-primary {
+      background-color: var(--primary-red);
+      border-color: var(--primary-red);
+    }
+
+    .btn-primary:hover,
+    .btn-primary:focus {
+      background-color: var(--dark-red);
+      border-color: var(--dark-red);
+    }
+
+    .price {
+      color: var(--primary-red);
+      font-weight: bold;
+      font-size: 1.1rem;
+    }
+
+    .cart-badge {
+      position: absolute;
+      top: -8px;
+      right: -8px;
+      font-size: 0.7rem;
+    }
+
+    .offcanvas {
+      width: 350px;
+    }
+
+    .cart-item-img {
+      width: 60px;
+      height: 60px;
+      object-fit: cover;
+    }
+
+    .cart-item {
+      border-bottom: 1px solid #eee;
+    }
+
+    .cart-item:last-child {
+      border-bottom: none;
+    }
+
+    .btn-sm {
+      padding: 0.25rem 0.5rem;
+      font-size: 0.875rem;
+    }
+
+    .quantity-input {
+      width: 40px;
+      text-align: center;
+    }
+
+    .flash-message {
+      position: fixed;
+      top: 70px;
+      right: 20px;
+      z-index: 1060;
+      min-width: 250px;
+      transform: translateX(100%);
+      transition: transform 0.3s ease-out;
+    }
+
+    .flash-message.show {
+      transform: translateX(0);
+    }
+
+    /* Animation for adding to cart */
+    @keyframes addedToCart {
+      0% {
+        transform: scale(1);
+      }
+
+      50% {
+        transform: scale(1.05);
+      }
+
+      100% {
+        transform: scale(1);
+      }
+    }
+
+    .added-animation {
+      animation: addedToCart 0.5s;
+    }
+  </style>
+</head>
+
+<body>
+
+  <header>
+
+
+
+
+
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark sticky-top" style="background-color: gray;">
+      <div class="container">
+        <a class="navbar-brand fw-bold" href="#"><img src="assets/image/ICON/Logo.jpg"
+            style="object-fit: cover; width: 70px; border-radius: 50%;" alt=""></a>
+        <button class="btn btn-outline-light position-relative ms-auto" type="button" data-bs-toggle="offcanvas"
+          data-bs-target="#cartSidebar">
+          <i class="bi bi-cart3"></i>
+          <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-warning text-dark "
+            id="cart-count">0</span>
+        </button>
+      </div>
+    </nav>
+
+    <!-- Flash Message -->
+    <div class="toast flash-message" role="alert" id="cartMessage">
+      <div class="toast-header bg-success text-white">
+        <strong class="me-auto">Cart Updated</strong>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"></button>
+      </div>
+      <div class="toast-body" id="cartMessageText"></div>
+    </div>
+  </header>
+
+  <main>
+    <!-- Main Content -->
+    <div class="container py-5">
+      <h2 class="mb-4 text-center">Vintage Collection</h2>
+
+      <div class="row g-3" id="products-container">
+        <!-- Products will be dynamically populated here -->
+      </div>
+    </div>
+
+    <!-- Cart Sidebar -->
+    <div class="offcanvas offcanvas-end" tabindex="-1" id="cartSidebar">
+      <div class="offcanvas-header" style="background-color: var(--primary-red); color: white;">
+        <h5 class="offcanvas-title">Your Cart</h5>
+        <button type="button" class="btn-close text-reset btn-close-white" data-bs-dismiss="offcanvas"
+          aria-label="Close"></button>
+      </div>
+      <div class="offcanvas-body d-flex flex-column">
+        <div id="cart-items" class="flex-grow-1 overflow-auto mb-3">
+          <!-- Cart items will be dynamically populated here -->
+        </div>
+
+        <div id="cart-empty" class="text-center text-muted py-5">
+          <i class="bi bi-cart3 fs-1"></i>
+          <p class="mt-2">Your cart is empty</p>
+        </div>
+
+        <div class="cart-summary mt-auto">
+          <div class="d-flex justify-content-between align-items-center py-3 border-top border-bottom">
+            <span class="fw-bold fs-5">Total:</span>
+            <span class="fw-bold fs-5" id="cart-total">$0.00</span>
+          </div>
+          <button class="btn btn-primary w-100 mt-3" onclick="checkout()">
+            <i class="bi bi-credit-card me-2"></i>Proceed to Checkout
+          </button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+
+
+  <!-- Bootstrap & Custom JS -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // Product data
+    const products = [
+      {
+        id: "product-1",
+        name: "R1",
+        price: 49.99,
+        image: "../assets/image/AttackShark/R1.png",
+        tag: "Best Seller",
+        tagClass: "bg-danger"
+      },
+      {
+        id: "product-2",
+        name: "X11",
+        price: 59.99,
+        image: "../assets/image/AttackShark/X11_black.png",
+        tag: "Limited",
+        tagClass: "bg-warning text-dark"
+      },
+      {
+        id: "product-3",
+        name: "R1",
+        price: 69.99,
+        image: "../assets/image/AttackShark/R1_white.png",
+        tag: "Popular",
+        tagClass: "bg-primary"
+      },
+      {
+        id: "product-4",
+        name: "Manchester Away Kit 2001",
+        price: 54.99,
+        image: "/api/placeholder/300/220",
+        tag: "New",
+        tagClass: "bg-success"
+      },
+      {
+        id: "product-5",
+        name: "Goalkeeper Kit 2008 Van der Sar",
+        price: 64.99,
+        image: "/api/placeholder/300/220"
+      },
+      {
+        id: "product-6",
+        name: "Champions League Edition 2008",
+        price: 79.99,
+        image: "/api/placeholder/300/220",
+        tag: "Rare",
+        tagClass: "bg-dark"
+      }
+    ];
+
+    // Initialize cart and toast components
+    let cart = [];
+    let cartToast;
+
+    // Initialize on DOM load
+    document.addEventListener('DOMContentLoaded', function () {
+      // Render products
+      renderProducts();
+
+      // Initialize cart from localStorage
+      cart = JSON.parse(localStorage.getItem('muvsCart')) || [];
+      updateCartUI();
+
+      // Initialize toast
+      cartToast = new bootstrap.Toast(document.getElementById('cartMessage'), {
+        delay: 3000
+      });
+    });
+
+    // Render all products
+    function renderProducts() {
+      const container = document.getElementById('products-container');
+
+      products.forEach(product => {
+        const col = document.createElement('div');
+        col.className = 'col-6 col-md-4 col-lg-2';
+
+        let tagHtml = '';
+        if (product.tag) {
+          tagHtml = `<span class="badge ${product.tagClass} badge-tag">${product.tag}</span>`;
+        }
+
+        col.innerHTML = `
+          <div class="card product-card shadow-sm" id="${product.id}">
+            <div class="position-relative">
+              <img src="${product.image}" class="card-img-top product-image" alt="${product.name}">
+              ${tagHtml}
+            </div>
+            <div class="card-body d-flex flex-column">
+              <h5 class="card-title">${product.name}</h5>
+              <p class="price mb-3">$${product.price.toFixed(2)}</p>
+              <button class="btn btn-primary mt-auto add-to-cart" data-id="${product.id}" 
+                data-name="${product.name}" data-price="${product.price}" data-img="${product.image}">
+                <i class="bi bi-cart-plus me-2"></i>Add to Cart
+              </button>
+            </div>
+          </div>
+        `;
+
+        container.appendChild(col);
+      });
+
+      // Add event listeners to all "Add to Cart" buttons
+      document.querySelectorAll('.add-to-cart').forEach(button => {
+        button.addEventListener('click', function () {
+          const productId = this.getAttribute('data-id');
+          const name = this.getAttribute('data-name');
+          const price = parseFloat(this.getAttribute('data-price'));
+          const img = this.getAttribute('data-img');
+          addToCart(productId, name, price, img);
+        });
+      });
+    }
+
+    // Add to cart function
+    function addToCart(productId, name, price, imgSrc) {
+      // Find if product already exists in cart
+      const existing = cart.find(item => item.productId === productId);
+
+      if (existing) {
+        // Increment quantity if already in cart
+        existing.qty++;
+        existing.total = existing.qty * existing.price;
+        showMessage(`Added another ${name} to your cart`);
+      } else {
+        // Add new item to cart
+        cart.push({
+          productId,
+          name,
+          price,
+          qty: 1,
+          total: price,
+          img: imgSrc
+        });
+        showMessage(`${name} added to your cart`);
+      }
+
+      // Save to localStorage
+      saveCart();
+
+      // Update the cart UI
+      updateCartUI();
+
+      // Visual feedback
+      const button = document.querySelector(`#${productId} button`);
+      button.classList.add('added-animation');
+
+      // Change button text & style temporarily
+      const originalText = button.innerHTML;
+      button.innerHTML = '<i class="bi bi-check-circle me-2"></i>Added';
+      button.classList.remove('btn-primary');
+      button.classList.add('btn-success');
+
+      setTimeout(() => {
+        button.classList.remove('added-animation');
+        button.innerHTML = originalText;
+        button.classList.remove('btn-success');
+        button.classList.add('btn-primary');
+      }, 1000);
+
+      // Open cart after adding item
+      // const cartSidebar = new bootstrap.Offcanvas(document.getElementById('cartSidebar'));
+      // cartSidebar.show();
+    }
+
+    // Update quantity function
+    function updateQuantity(productId, newQty) {
+      // Find item in cart
+      const item = cart.find(item => item.productId === productId);
+
+      if (!item) return;
+
+      // Ensure quantity is at least 1
+      newQty = Math.max(1, parseInt(newQty) || 1);
+
+      // Update quantity and total
+      item.qty = newQty;
+      item.total = item.qty * item.price;
+
+      // Save and update UI
+      saveCart();
+      updateCartUI();
+    }
+
+    // Remove from cart function
+    function removeFromCart(productId) {
+      // Find item index
+      const idx = cart.findIndex(item => item.productId === productId);
+
+      if (idx > -1) {
+        const removedItem = cart[idx];
+        // Remove item from cart
+        cart.splice(idx, 1);
+        showMessage(`${removedItem.name} removed from your cart`);
+
+        // Save and update UI
+        saveCart();
+        updateCartUI();
+      }
+    }
+
+    // Save cart to localStorage
+    function saveCart() {
+      localStorage.setItem('muvsCart', JSON.stringify(cart));
+    }
+
+    // Show toast message
+    function showMessage(message) {
+      const messageEl = document.getElementById('cartMessageText');
+      messageEl.textContent = message;
+      cartToast.show();
+    }
+
+    // Update cart UI
+    function updateCartUI() {
+      const container = document.getElementById('cart-items');
+      const emptyMessage = document.getElementById('cart-empty');
+
+      // Clear container
+      container.innerHTML = '';
+
+      // Calculate total
+      let sum = 0;
+      let itemCount = 0;
+
+      // If cart is empty, show empty message
+      if (cart.length === 0) {
+        emptyMessage.style.display = 'block';
+      } else {
+        emptyMessage.style.display = 'none';
+
+        // Create cart item elements
+        cart.forEach(item => {
+          const div = document.createElement('div');
+          div.className = 'cart-item py-2';
+          div.innerHTML = `
+            <div class="d-flex">
+              <img src="${item.img}" alt="${item.name}" class="cart-item-img rounded me-3">
+              <div class="flex-grow-1 position-relative">
+                <h6 class="mb-1">${item.name}</h6>
+                <p class="price mb-2">$${item.price.toFixed(2)}</p>
+                <div class="d-flex align-items-center">
+                  <button class="btn btn-sm btn-outline-secondary" onclick="updateQuantity('${item.productId}', ${item.qty - 1})">
+                    <i class="bi bi-dash"></i>
+                  </button>
+                  <input type="number" class="form-control form-control-sm mx-2 quantity-input" value="${item.qty}" min="1" 
+                    onchange="updateQuantity('${item.productId}', this.value)">
+                  <button class="btn btn-sm btn-outline-secondary" onclick="updateQuantity('${item.productId}', ${item.qty + 1})">
+                    <i class="bi bi-plus"></i>
+                  </button>
+                </div>
+                <button class="btn btn-sm text-danger position-absolute top-0 end-0" onclick="removeFromCart('${item.productId}')">
+                  <i class="bi bi-x-circle"></i>
+                </button>
+              </div>
+            </div>
+          `;
+          container.appendChild(div);
+
+          // Update sums
+          sum += item.total;
+          itemCount += item.qty;
+        });
+      }
+
+      // Update displayed total and count
+      document.getElementById('cart-total').textContent = `$${sum.toFixed(2)}`;
+      document.getElementById('cart-count').textContent = itemCount;
+    }
+
+    // Checkout function
+    function checkout() {
+      if (cart.length === 0) {
+        showMessage('Your cart is empty');
+        return;
+      }
+
+      // Calculate total
+      const total = cart.reduce((sum, item) => sum + item.total, 0).toFixed(2);
+
+      // For demo purposes, show alert
+      alert(`Thank you for your order!\n\nYou purchased ${cart.length} items for $${total}.`);
+
+      // Clear cart after checkout
+      cart = [];
+      saveCart();
+      updateCartUI();
+      showMessage('Thank you for your purchase!');
+
+      // Close the cart sidebar
+      const cartSidebar = bootstrap.Offcanvas.getInstance(document.getElementById('cartSidebar'));
+      cartSidebar.hide();
+    }
+  </script>
+</body>
+
+</html>

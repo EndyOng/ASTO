@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Responsive Draggable & Clickable Carousel</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f1f1f1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+      color: #333;
+    }
+    h1 {
+      margin-bottom: 20px;
+      color: #333;
+    }
+    .carousel-container {
+      position: relative;
+      width: 90%;
+      max-width: 1000px;
+      overflow: hidden;
+      background: #fff;
+      border-radius: 10px;
+      padding: 30px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+    .carousel-wrapper {
+      position: relative;
+      overflow: hidden;
+    }
+    /* Carousel track with scroll snapping */
+    .carousel-track {
+      display: flex;
+      gap: 20px;
+      overflow-x: auto;
+      scroll-behavior: smooth;
+      cursor: grab;
+      scroll-snap-type: x mandatory;
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+    .carousel-track:active {
+      cursor: grabbing;
+    }
+    .carousel-track::-webkit-scrollbar {
+      display: none;
+    }
+    /* Card styling */
+    .card {
+      background-color: #e7f0fd;
+      width: 300px;
+      flex-shrink: 0;
+      text-align: center;
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      scroll-snap-align: start;
+    }
+    .profile-img {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      overflow: hidden;
+      margin: 0 auto 15px;
+      border: 3px solid #fff;
+      box-shadow: 0 0 0 3px #4a90e2;
+    }
+    .profile-img img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .card h3 {
+      margin-bottom: 10px;
+      color: #333;
+    }
+    .card p {
+      font-size: 14px;
+      line-height: 1.4;
+      color: #555;
+      margin-bottom: 15px;
+    }
+    .card button {
+      background-color: #4a90e2;
+      color: #fff;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .card button:hover {
+      background-color: #357abd;
+    }
+    /* Arrow buttons */
+    .carousel-btn {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background-color: rgba(0, 0, 0, 0.2);
+      border: none;
+      color: #333;
+      font-size: 30px;
+      width: 40px;
+      height: 40px;
+      cursor: pointer;
+      border-radius: 50%;
+      outline: none;
+      z-index: 10;
+      transition: background-color 0.3s;
+    }
+    .carousel-btn:hover {
+      background-color: rgba(0, 0, 0, 0.4);
+      color: #fff;
+    }
+    .carousel-btn.prev {
+      left: 10px;
+    }
+    .carousel-btn.next {
+      right: 10px;
+    }
+    /* Dot indicators */
+    .carousel-indicators {
+      text-align: center;
+      margin-top: 20px;
+    }
+    .dot {
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      margin: 0 5px;
+      border-radius: 50%;
+      background-color: #ccc;
+      cursor: pointer;
+    }
+    .dot.active {
+      background-color: #4a90e2;
+    }
+    /* Play All Button */
+    .play-all-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      background-color: #4a90e2;
+      color: #fff;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 30px;
+      font-size: 16px;
+      cursor: pointer;
+      margin: 20px auto 0;
+    }
+    .play-all-btn span {
+      font-size: 20px;
+    }
+    .play-all-btn:hover {
+      background-color: #357abd;
+    }
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+      .card {
+        width: 250px;
+        padding: 15px;
+      }
+      .profile-img {
+        width: 80px;
+        height: 80px;
+      }
+    }
+    @media (max-width: 480px) {
+      .carousel-container {
+        padding: 20px;
+      }
+      .card {
+        width: 200px;
+        padding: 10px;
+      }
+      .profile-img {
+        width: 70px;
+        height: 70px;
+      }
+      .carousel-btn {
+        font-size: 24px;
+        width: 35px;
+        height: 35px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <h1>Team Carousel</h1>
+  <div class="carousel-container">
+    <!-- Arrow Buttons -->
+    <button class="carousel-btn prev" id="prevBtn">&#10094;</button>
+    <button class="carousel-btn next" id="nextBtn">&#10095;</button>
+    
+    <div class="carousel-wrapper">
+      <div class="carousel-track" id="carouselTrack">
+        <div class="card">
+          <div class="profile-img">
+            <img src="https://via.placeholder.com/100" alt="David Dell" />
+          </div>
+          <h3>David Dell</h3>
+          <p>The lorem text the section contain contains header having open and close functionality.</p>
+          <button>View More</button>
+        </div>
+        <div class="card">
+          <div class="profile-img">
+            <img src="https://via.placeholder.com/100" alt="Rose Bush" />
+          </div>
+          <h3>Rose Bush</h3>
+          <p>The lorem text the section contain contains header having open and close functionality.</p>
+          <button>View More</button>
+        </div>
+        <div class="card">
+          <div class="profile-img">
+            <img src="https://via.placeholder.com/100" alt="Jones Gail" />
+          </div>
+          <h3>Jones Gail</h3>
+          <p>The lorem text the section contain contains header having open and close functionality.</p>
+          <button>View More</button>
+        </div>
+        <div class="card">
+          <div class="profile-img">
+            <img src="https://via.placeholder.com/100" alt="Maria Lane" />
+          </div>
+          <h3>Maria Lane</h3>
+          <p>The lorem text the section contain contains header having open and close functionality.</p>
+          <button>View More</button>
+        </div>
+        <div class="card">
+          <div class="profile-img">
+            <img src="https://via.placeholder.com/100" alt="John Snow" />
+          </div>
+          <h3>John Snow</h3>
+          <p>The lorem text the section contain contains header having open and close functionality.</p>
+          <button>View More</button>
+        </div>
+        <div class="card">
+          <div class="profile-img">
+            <img src="https://via.placeholder.com/100" alt="Katie Bell" />
+          </div>
+          <h3>Katie Bell</h3>
+          <p>The lorem text the section contain contains header having open and close functionality.</p>
+          <button>View More</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Dot Indicators -->
+    <div class="carousel-indicators">
+      <span class="dot active" data-index="0"></span>
+      <span class="dot" data-index="1"></span>
+    </div>
+
+    <!-- Play All Button -->
+    <button class="play-all-btn">
+      <span>&#9654;</span> Play all
+    </button>
+  </div>
+
+  <script>
+    const carouselTrack = document.getElementById('carouselTrack');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const dots = document.querySelectorAll('.dot');
+
+    // Calculate scroll amount based on one card width plus gap (20px)
+    let slideWidth = carouselTrack.querySelector('.card').offsetWidth + 20;
+
+    // Arrow click functionality
+    prevBtn.addEventListener('click', () => {
+      carouselTrack.scrollBy({ left: -slideWidth, behavior: 'smooth' });
+    });
+    nextBtn.addEventListener('click', () => {
+      carouselTrack.scrollBy({ left: slideWidth, behavior: 'smooth' });
+    });
+
+    // Drag (cursor) functionality
+    let isDown = false;
+    let startX;
+    let scrollLeftStart;
+
+    carouselTrack.addEventListener('mousedown', (e) => {
+      isDown = true;
+      startX = e.pageX - carouselTrack.offsetLeft;
+      scrollLeftStart = carouselTrack.scrollLeft;
+    });
+    carouselTrack.addEventListener('mouseleave', () => {
+      isDown = false;
+    });
+    carouselTrack.addEventListener('mouseup', () => {
+      isDown = false;
+    });
+    carouselTrack.addEventListener('mousemove', (e) => {
+      if (!isDown) return;
+      e.preventDefault();
+      const x = e.pageX - carouselTrack.offsetLeft;
+      const walk = x - startX;
+      carouselTrack.scrollLeft = scrollLeftStart - walk;
+    });
+
+    // Update dot indicators based on scroll position
+    carouselTrack.addEventListener('scroll', () => {
+      const totalScrollWidth = carouselTrack.scrollWidth - carouselTrack.clientWidth;
+      const scrollFraction = carouselTrack.scrollLeft / totalScrollWidth;
+      let activeIndex = scrollFraction < 0.5 ? 0 : 1;
+      dots.forEach(dot => dot.classList.remove('active'));
+      dots[activeIndex].classList.add('active');
+    });
+
+    // Clicking on dots scrolls to that position
+    dots.forEach(dot => {
+      dot.addEventListener('click', () => {
+        let index = parseInt(dot.getAttribute('data-index'));
+        carouselTrack.scrollTo({ left: (carouselTrack.scrollWidth - carouselTrack.clientWidth) * index, behavior: 'smooth' });
+      });
+    });
+
+    // Recalculate slideWidth on window resize (for responsiveness)
+    window.addEventListener('resize', () => {
+      slideWidth = carouselTrack.querySelector('.card').offsetWidth + 20;
+    });
+  </script>
+</body>
+</html>
